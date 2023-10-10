@@ -13,7 +13,7 @@
       system = "x86_64-linux";
       postgresql = pkgs.postgresql_15;
     in  {
-      devShells.default = pkgs.mkShell {
+      devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
           git
 
@@ -21,7 +21,7 @@
           pgcli
 
           go
-          gofmt
+          gopls
         ];
         shellHook = ''
             if ! test -d .nix-shell; then
