@@ -12,6 +12,7 @@
       pkgs = import nixpkgs { inherit system; };
       system = "x86_64-linux";
       postgresql = pkgs.postgresql_15;
+      go = pkgs.go_1_21;
     in  {
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
