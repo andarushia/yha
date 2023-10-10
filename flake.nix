@@ -33,5 +33,5 @@
             export PGDATA=$NIX_SHELL_DIR/db
             '';
       };
-    }
+    };
 }
