@@ -31,7 +31,7 @@ NIX_BINTOOLS='/nix/store/mc6q3cdz5s0p1aj4y586bglsfsnsf2k8-binutils-wrapper-2.40'
 export NIX_BINTOOLS
 NIX_BINTOOLS_WRAPPER_TARGET_HOST_x86_64_unknown_linux_gnu='1'
 export NIX_BINTOOLS_WRAPPER_TARGET_HOST_x86_64_unknown_linux_gnu
-NIX_BUILD_CORES='16'
+NIX_BUILD_CORES='4'
 export NIX_BUILD_CORES
 NIX_CC='/nix/store/18bs92p6yf6w2wwxhbplgx02y6anq092-gcc-wrapper-12.3.0'
 export NIX_CC
@@ -43,7 +43,7 @@ NIX_ENFORCE_NO_NATIVE='1'
 export NIX_ENFORCE_NO_NATIVE
 NIX_HARDENING_ENABLE='fortify fortify3 stackprotector pic strictoverflow format relro bindnow'
 export NIX_HARDENING_ENABLE
-NIX_LDFLAGS='-rpath /home/andalusia/dev/anyatop/outputs/out/lib  -L/nix/store/pzf6dnxg8gf04xazzjdwarm7s03cbrgz-python3-3.10.12/lib -L/nix/store/vx04ph23h5bg6r10161k3wmx9j9dfbik-postgresql-15.4/lib -L/nix/store/hyl9m14pwv235nyzkfyzz4iz9qzh4qa9-postgresql-15.4-lib/lib -L/nix/store/pzf6dnxg8gf04xazzjdwarm7s03cbrgz-python3-3.10.12/lib -L/nix/store/vx04ph23h5bg6r10161k3wmx9j9dfbik-postgresql-15.4/lib -L/nix/store/hyl9m14pwv235nyzkfyzz4iz9qzh4qa9-postgresql-15.4-lib/lib'
+NIX_LDFLAGS='-rpath /home/andalusia/dev/yha/outputs/out/lib  -L/nix/store/pzf6dnxg8gf04xazzjdwarm7s03cbrgz-python3-3.10.12/lib -L/nix/store/vx04ph23h5bg6r10161k3wmx9j9dfbik-postgresql-15.4/lib -L/nix/store/hyl9m14pwv235nyzkfyzz4iz9qzh4qa9-postgresql-15.4-lib/lib -L/nix/store/pzf6dnxg8gf04xazzjdwarm7s03cbrgz-python3-3.10.12/lib -L/nix/store/vx04ph23h5bg6r10161k3wmx9j9dfbik-postgresql-15.4/lib -L/nix/store/hyl9m14pwv235nyzkfyzz4iz9qzh4qa9-postgresql-15.4-lib/lib'
 export NIX_LDFLAGS
 NIX_NO_SELF_RPATH='1'
 NIX_STORE='/nix/store'
@@ -136,7 +136,7 @@ declare -a envHostHostHooks=('ccWrapper_addCVars' 'bintoolsWrapper_addLDVars' 'a
 declare -a envHostTargetHooks=('ccWrapper_addCVars' 'bintoolsWrapper_addLDVars' 'addPythonPath' 'sysconfigdataHook' 'addPythonPath' 'sysconfigdataHook' )
 declare -a envTargetTargetHooks=()
 declare -a fixupOutputHooks=('if [ -z "${dontPatchELF-}" ]; then patchELF "$prefix"; fi' 'if [[ -z "${noAuditTmpdir-}" && -e "$prefix" ]]; then auditTmpdir "$prefix"; fi' 'if [ -z "${dontGzipMan-}" ]; then compressManPages "$prefix"; fi' '_moveLib64' '_moveSbin' '_moveSystemdUserUnits' 'patchShebangsAuto' '_pruneLibtoolFiles' '_doStrip' )
-guess='16'
+guess='4'
 initialPath='/nix/store/y9gr7abwxvzcpg5g73vhnx1fpssr5frr-coreutils-9.3 /nix/store/b6izr8wh0p7dyvh3cyg14wq2rn8d31ik-findutils-4.9.0 /nix/store/q56n7lhjw724i7b33qaqra61p7m7c0cd-diffutils-3.10 /nix/store/x23by79p38ll0js1alifmf3y56vqfs49-gnused-4.9 /nix/store/xafzciap7acqhfx84dvqkp18bg4lrai3-gnugrep-3.11 /nix/store/8kkn44iwdbgqkrj661nr4cjcpmrqqmx8-gawk-5.2.2 /nix/store/89s3w7b4g78989kpzc7sy4phv0nqfira-gnutar-1.35 /nix/store/2a9na7bp4r3290yqqzg503325dwglxyq-gzip-1.13 /nix/store/gxknjk51s7q86llkbzpaqv43kflj9d8j-bzip2-1.0.8-bin /nix/store/2jp6cv2q4cgh91f5lp57p945rq98ldhr-gnumake-4.4.1 /nix/store/xdqlrixlspkks50m9b0mpvag65m3pf2w-bash-5.2-p15 /nix/store/c15ama0p8jr4mn0943yjk4rpa2hxk7ml-patch-2.7.6 /nix/store/sb3sxnp4g40gfw758a0m4sjm7slvmax9-xz-5.4.4-bin /nix/store/xfjqspcc9442hi0lm0szv3sw75zswvml-file-5.45'
 mesonFlags=''
 export mesonFlags
@@ -144,7 +144,7 @@ name='nix-shell-env'
 export name
 nativeBuildInputs=''
 export nativeBuildInputs
-out='/home/andalusia/dev/anyatop/outputs/out'
+out='/home/andalusia/dev/yha/outputs/out'
 export out
 outputBin='out'
 outputDev='out'
@@ -175,7 +175,7 @@ preConfigurePhases=' updateAutotoolsGnuConfigScriptsPhase'
 declare -a preFixupHooks=('_moveToShare' '_multioutDocs' '_multioutDevs' )
 preferLocalBuild='1'
 export preferLocalBuild
-prefix='/home/andalusia/dev/anyatop/outputs/out'
+prefix='/home/andalusia/dev/yha/outputs/out'
 declare -a propagatedBuildDepFiles=('propagated-build-build-deps' 'propagated-native-build-inputs' 'propagated-build-target-deps' )
 propagatedBuildInputs=''
 export propagatedBuildInputs
