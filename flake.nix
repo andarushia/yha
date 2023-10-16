@@ -6,15 +6,13 @@
   };
 
   outputs = { self, nixpkgs }:
-    let
+  let
       pkgs = import nixpkgs { inherit system; };
       system = "x86_64-linux";
       go = pkgs.go_1_21;
     in  {
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = [
-          pkgs.pgcli
-          
           go
           pkgs.gopls
         ];

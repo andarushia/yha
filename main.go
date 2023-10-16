@@ -39,8 +39,3 @@ func main() {
 
 	fmt.Println("connection established")
 }
-
-func createTable(db *DB) (Result, error) {
-	// nothing here
-	pass
-}
