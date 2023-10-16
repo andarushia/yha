@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-
 	_ "github.com/lib/pq"
 )
 
@@ -38,4 +37,15 @@ func main() {
 	}
 
 	fmt.Println("connection established")
+
+	rows, err := getNames(db)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(rows)
+}
+
+func getNames(db *sql.DB) (*sql.Rows, error) {
+	rows, err := db.Query("SELECT * FROM profile")
+	return rows, err
 }
