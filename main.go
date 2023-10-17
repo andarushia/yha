@@ -1,18 +1,20 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"os"
 )
 
 type Creds struct {
+	Id         uint64
 	Name       string
 	Surname    string
 	Patronymic string
-	Age        uint64
-	Sex        string
-	Origin     string
+	Age        *uint64
+	Sex        *string
+	Origin     *string
 }
 
 const (
@@ -20,32 +22,37 @@ const (
 	port     = 5432
 	user     = "anya"
 	password = "sqlxpass"
-	dbname   = "anyatop"
+	dbname   = "anyadb"
 )
 
 func main() {
-	psql := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-	db, err := sql.Open("postgresql", psql)
+	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", user, password,
+		host, port, dbname)
+	conn, err := pgx.Connect(context.Background(), databaseUrl)
 	if err != nil {
-		panic(err)
+		handleErr("unable to connect to database", err)
 	}
-	defer db.Close()
+	defer conn.Close(context.Background())
 
-	if err = db.Ping(); err != nil {
-		panic(err)
-	}
-
-	fmt.Println("connection established")
-
-	rows, err := getNames(db)
+	err = getName(conn)
 	if err != nil {
-		panic(err)
+		handleErr("couldn't get rows", err)
 	}
-	fmt.Println(rows)
 }
 
-func getNames(db *sql.DB) (*sql.Rows, error) {
-	rows, err := db.Query("SELECT * FROM profile")
-	return rows, err
+func getName(conn *pgx.Conn) error {
+	rows, _ := conn.Query(context.Background(), "SELECT * FROM public.profile")
+	people, err := pgx.CollectRows(rows, pgx.RowToStructByPos[Creds])
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func handleErr(msg string, err error) {
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v: %v\n", msg, err)
+		os.Exit(1)
+	}
 }
