@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"sync"
 )
 
 type Creds struct {
@@ -113,16 +114,20 @@ func handleErr(errorMsg string, err error) {
 	}
 }
 
-func populate(name string) (uint8, string, string) {
-	var age Age
-	var sex Gender
-	var origin Country
+func populate(wg sync.WaitGroup, ch chan<- []byte, name string) (uint8, string, string) {
+	var (
+		age    Age
+		sex    Gender
+		origin Country
+	)
 
 	agifyUrl := fmt.Sprintf("https://api.agify.io/?name=%v", name)
 	genderizeUrl := fmt.Sprintf("https://api.genderize.io/?name=%v", name)
 	nationalizeUrl := fmt.Sprintf("https://api.nationalize.io/?name=%v", name)
 
-	return age.getJson(agifyUrl), sex.getJson(genderizeUrl), origin.getJson(nationalizeUrl)
+	go age.getJson(agifyUrl)
+	go sex.getJson(genderizeUrl)
+	go origin.getJson(nationalizeUrl)
 }
 
 func replaceQuery(dbpool *pgxpool.Pool, id uint64, age uint8, sex string, origin string) {
@@ -131,4 +136,17 @@ func replaceQuery(dbpool *pgxpool.Pool, id uint64, age uint8, sex string, origin
 	if err != nil {
 		handleErr("error while updating database", err)
 	}
+}
+
+func addEntry(dbpool *pgxpool.Pool, name string, surname string, patronymic string) {
+	queryString := fmt.Sprintf("INSERT INTO profile (name, surname, patronymic) VALUES (%v, %v, %v);", name, surname, patronymic)
+	_, err := dbpool.Exec(context.Background(), queryString)
+	if err != nil {
+		handleErr("error while inserting data", err)
+	}
+	searchString := fmt.Sprintf("SELECT id FROM public.profile WHERE name = %v AND surname = %v", name, surname)
+	var person Creds
+	dbpool.QueryRow(context.Background(), searchString).Scan(&person)
+	age, sex, origin := populate(name)
+	replaceQuery(dbpool, person.Id, age, sex, origin)
 }
