@@ -69,7 +69,7 @@ func (str Country) getJson(requestUrl string) string {
 	return str.Origin[0].Country
 }
 
-func requestData(wg sync.WaitGroup, ch chan<- []byte, requestUrl string) {
+func requestData(wg *sync.WaitGroup, ch chan<- []byte, requestUrl string) {
 
 }
 
