@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -67,6 +69,10 @@ func (str Country) getJson(requestUrl string) string {
 	return str.Origin[0].Country
 }
 
+func requestData(wg sync.WaitGroup, ch chan<- []byte, requestUrl string) {
+
+}
+
 const (
 	host     = "localhost"
 	port     = 5432
@@ -93,9 +99,10 @@ func main() {
 }
 
 func cliPrompt(dbpool *pgxpool.Pool) {
+	reader := bufio.NewReader(os.Stdin)
 	fmt.Printf("select:\n1. add entry\n2. delete entry\n3. print table\n")
+	fmt.Print("your input: ")
 	var choice int
-	fmt.Printf("your input:")
 	_, err := fmt.Scan(&choice)
 	if err != nil {
 		handleErr("error parsing data", err)
@@ -103,8 +110,7 @@ func cliPrompt(dbpool *pgxpool.Pool) {
 	switch choice {
 	case 1:
 		fmt.Println("provide name, surname and patronymic if exists:")
-		var promptString string
-		_, err := fmt.Scan(&promptString)
+		promptString, err := reader.ReadString('\n')
 		if err != nil {
 			handleErr("error parsing data", err)
 		}
@@ -169,7 +175,12 @@ func replaceQuery(dbpool *pgxpool.Pool, id uint64, age uint8, sex string, origin
 }
 
 func addEntry(dbpool *pgxpool.Pool, name string, surname string, patronymic string) {
-	queryString := fmt.Sprintf("INSERT INTO profile (name, surname, patronymic) VALUES (%v, %v, %v);", name, surname, patronymic)
+	var queryString string
+	if patronymic != "" {
+		queryString = fmt.Sprintf("INSERT INTO profile (name, surname, patronymic) VALUES ('%v', '%v', '%v');", name, surname, patronymic)
+	} else {
+		queryString = fmt.Sprintf("INSERT INTO profile (name, surname) VALUES ('%v', '%v');", name, surname)
+	}
 	_, err := dbpool.Exec(context.Background(), queryString)
 	if err != nil {
 		handleErr("error while inserting data", err)
