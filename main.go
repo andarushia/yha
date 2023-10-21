@@ -93,8 +93,9 @@ func main() {
 }
 
 func cliPrompt(dbpool *pgxpool.Pool) {
-	fmt.Printf("select:\n1. add entry\n2. delete entry\n3. print table\n\n")
+	fmt.Printf("select:\n1. add entry\n2. delete entry\n3. print table\n")
 	var choice int
+	fmt.Printf("your input:")
 	_, err := fmt.Scan(&choice)
 	if err != nil {
 		handleErr("error parsing data", err)
@@ -108,10 +109,12 @@ func cliPrompt(dbpool *pgxpool.Pool) {
 			handleErr("error parsing data", err)
 		}
 		name := strings.Split(promptString, " ")
-		if len(name) < 3 {
+		if len(name) == 2 {
 			addEntry(dbpool, name[0], name[1], "")
-		} else {
+		} else if len(name) == 3 {
 			addEntry(dbpool, name[0], name[1], name[2])
+		} else {
+			handleErr("yhahha", nil)
 		}
 	case 2:
 		fmt.Println("not implemented yet")
@@ -139,10 +142,8 @@ func getNameAndPopulate(dbpool *pgxpool.Pool) error {
 }
 
 func handleErr(errorMsg string, err error) {
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v: %v\n", errorMsg, err)
-		os.Exit(1)
-	}
+	fmt.Fprintf(os.Stderr, "%v: %v\n", errorMsg, err)
+	os.Exit(1)
 }
 
 func populate(name string) (uint8, string, string) {
