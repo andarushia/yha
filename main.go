@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
 	"net/http"
 	"os"
-	"sync"
+	"strings"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Creds struct {
@@ -79,13 +80,43 @@ func main() {
 		host, port, dbname)
 	dbpool, err := pgxpool.New(context.Background(), databaseUrl)
 	if err != nil {
-		handleErr("unable to dbpoolect to database", err)
+		handleErr("unable to connect to database", err)
 	}
 	defer dbpool.Close()
+
+	cliPrompt(dbpool)
 
 	err = getNameAndPopulate(dbpool)
 	if err != nil {
 		handleErr("couldn't get rows", err)
+	}
+}
+
+func cliPrompt(dbpool *pgxpool.Pool) {
+	fmt.Printf("select:\n1. add entry\n2. delete entry\n3. print table\n\n")
+	var choice int
+	_, err := fmt.Scan(&choice)
+	if err != nil {
+		handleErr("error parsing data", err)
+	}
+	switch choice {
+	case 1:
+		fmt.Println("provide name, surname and patronymic if exists:")
+		var promptString string
+		_, err := fmt.Scan(&promptString)
+		if err != nil {
+			handleErr("error parsing data", err)
+		}
+		name := strings.Split(promptString, " ")
+		if len(name) < 3 {
+			addEntry(dbpool, name[0], name[1], "")
+		} else {
+			addEntry(dbpool, name[0], name[1], name[2])
+		}
+	case 2:
+		fmt.Println("not implemented yet")
+	case 3:
+		fmt.Println("not implemented yet")
 	}
 }
 
@@ -114,7 +145,7 @@ func handleErr(errorMsg string, err error) {
 	}
 }
 
-func populate(wg sync.WaitGroup, ch chan<- []byte, name string) (uint8, string, string) {
+func populate(name string) (uint8, string, string) {
 	var (
 		age    Age
 		sex    Gender
@@ -125,9 +156,7 @@ func populate(wg sync.WaitGroup, ch chan<- []byte, name string) (uint8, string, 
 	genderizeUrl := fmt.Sprintf("https://api.genderize.io/?name=%v", name)
 	nationalizeUrl := fmt.Sprintf("https://api.nationalize.io/?name=%v", name)
 
-	go age.getJson(agifyUrl)
-	go sex.getJson(genderizeUrl)
-	go origin.getJson(nationalizeUrl)
+	return age.getJson(agifyUrl), sex.getJson(genderizeUrl), origin.getJson(nationalizeUrl)
 }
 
 func replaceQuery(dbpool *pgxpool.Pool, id uint64, age uint8, sex string, origin string) {
