@@ -29,12 +29,13 @@ type Age struct {
 	Age uint8 `json:"age"`
 }
 
-func (str Age) getJson(requestUrl string) uint8 {
-	data, _ := http.Get(requestUrl)
-	responseBody, _ := io.ReadAll(data.Body)
-	err := json.Unmarshal(responseBody, &str)
+func (str Age) getJson(wg *sync.WaitGroup, ch chan []byte, requestUrl string) uint8 {
+	wg.Add(1)
+	go requestData(wg, ch, requestUrl)
+	data := <-ch
+	err := json.Unmarshal(data, &str)
 	if err != nil {
-		handleErr("error during requesting data", err)
+		handleErr("error during unmarshaling", err)
 	}
 	return str.Age
 }
@@ -43,12 +44,13 @@ type Gender struct {
 	Sex string `json:"gender"`
 }
 
-func (str Gender) getJson(requestUrl string) string {
-	data, _ := http.Get(requestUrl)
-	responseBody, _ := io.ReadAll(data.Body)
-	err := json.Unmarshal(responseBody, &str)
+func (str Gender) getJson(wg *sync.WaitGroup, ch chan []byte, requestUrl string) string {
+	wg.Add(1)
+	go requestData(wg, ch, requestUrl)
+	data := <-ch
+	err := json.Unmarshal(data, &str)
 	if err != nil {
-		handleErr("error during requesting data", err)
+		handleErr("error during unmarshaling", err)
 	}
 	return str.Sex
 }
@@ -59,18 +61,26 @@ type Country struct {
 	} `json:"country"`
 }
 
-func (str Country) getJson(requestUrl string) string {
-	data, _ := http.Get(requestUrl)
-	responseBody, _ := io.ReadAll(data.Body)
-	err := json.Unmarshal(responseBody, &str)
+func (str Country) getJson(wg *sync.WaitGroup, ch chan []byte, requestUrl string) string {
+	wg.Add(1)
+	go requestData(wg, ch, requestUrl)
+	data := <-ch
+	err := json.Unmarshal(data, &str)
 	if err != nil {
-		handleErr("error during requesting data", err)
+		handleErr("error during unmarshaling", err)
 	}
 	return str.Origin[0].Country
 }
 
 func requestData(wg *sync.WaitGroup, ch chan<- []byte, requestUrl string) {
+	data, _ := http.Get(requestUrl)
+	responseBody, err := io.ReadAll(data.Body)
+	if err != nil {
+		handleErr("error during requesting data", err)
+	}
+	ch <- responseBody
 
+	defer wg.Done()
 }
 
 const (
@@ -157,13 +167,21 @@ func populate(name string) (uint8, string, string) {
 		age    Age
 		sex    Gender
 		origin Country
+		wg     sync.WaitGroup
 	)
+
+	ch := make(chan []byte)
 
 	agifyUrl := fmt.Sprintf("https://api.agify.io/?name=%v", name)
 	genderizeUrl := fmt.Sprintf("https://api.genderize.io/?name=%v", name)
 	nationalizeUrl := fmt.Sprintf("https://api.nationalize.io/?name=%v", name)
 
-	return age.getJson(agifyUrl), sex.getJson(genderizeUrl), origin.getJson(nationalizeUrl)
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	return age.getJson(&wg, ch, agifyUrl), sex.getJson(&wg, ch, genderizeUrl), origin.getJson(&wg, ch, nationalizeUrl)
 }
 
 func replaceQuery(dbpool *pgxpool.Pool, id uint64, age uint8, sex string, origin string) {
